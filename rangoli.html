@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diwali Animated Rangoli</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    height: 100vh;
+    overflow: hidden;
+    background: radial-gradient(circle, #351044, #10051d 75%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Georgia, serif;
+}
+
+canvas {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+h1 {
+    position: absolute;
+    top: 8%;
+    color: #ffdc75;
+    text-align: center;
+    font-size: clamp(25px, 5vw, 48px);
+    text-shadow: 0 0 10px orange, 0 0 25px gold;
+    letter-spacing: 4px;
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 0 8px gold; }
+    to { text-shadow: 0 0 25px orange, 0 0 40px gold; }
+}
+
+#message {
+    position: absolute;
+    bottom: 7%;
+    color: #ffe6a0;
+    font-size: clamp(15px, 3vw, 24px);
+    letter-spacing: 3px;
+    text-shadow: 0 0 15px orange;
+}
+</style>
+</head>
+
+<body>
+
+<h1>✨ HAPPY DIWALI ✨</h1>
+<canvas id="rangoli"></canvas>
+<div id="message">🪔 Spread Happiness & Light 🪔</div>
+
+<script>
+const canvas = document.getElementById("rangoli");
+const ctx = canvas.getContext("2d");
+
+let W, H, cx, cy, radius;
+let angle = 0;
+let sparks = [];
+
+function resize() {
+    W = canvas.width = innerWidth;
+    H = canvas.height = innerHeight;
+    cx = W / 2;
+    cy = H / 2;
+    radius = Math.min(W, H) * 0.31;
+}
+resize();
+addEventListener("resize", resize);
+
+const colors = [
+    "#ff1744", "#ff9100", "#ffea00",
+    "#00e5ff", "#e040fb", "#76ff03",
+    "#ff4081", "#ffffff"
+];
+
+function petal(x, y, r, a, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(a);
+
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = color;
+    ctx.fillStyle = color;
+
+    ctx.beginPath();
+    ctx.ellipse(0, -r * 0.55, r * 0.22,
+                r * 0.55, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
+function drawRangoli() {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+
+    // Outer circular rings
+    for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * (0.72 + i * 0.07),
+                0, Math.PI * 2);
+        ctx.strokeStyle = colors[i];
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = colors[i];
+        ctx.stroke();
+    }
+
+    // Outer petals
+    for (let i = 0; i < 32; i++) {
+        let a = (Math.PI * 2 / 32) * i;
+        petal(0, 0, radius, a, colors[i % colors.length]);
+    }
+
+    // Inner flower petals
+    for (let i = 0; i < 16; i++) {
+        let a = (Math.PI * 2 / 16) * i;
+        petal(0, 0, radius * 0.65, a, colors[(i + 3) % colors.length]);
+    }
+
+    // Decorative dots
+    for (let i = 0; i < 48; i++) {
+        let a = (Math.PI * 2 / 48) * i;
+        let x = Math.cos(a) * radius * 0.85;
+        let y = Math.sin(a) * radius * 0.85;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff3a0";
+        ctx.fill();
+    }
+
+    // Center mandala
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 0.25, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffb300";
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = "gold";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 0.18, 0, Math.PI * 2);
+    ctx.fillStyle = "#8e24aa";
+    ctx.fill();
+
+    ctx.restore();
+}
+
+function drawDiya(x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Diya bowl
+    ctx.fillStyle = "#ff8f00";
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = "orange";
+    ctx.beginPath();
+    ctx.ellipse(0, 12, 23, 10, 0, 0, Math.PI);
+    ctx.fill();
+
+    // Flame
+    ctx.fillStyle = "#ffeb3b";
+    ctx.beginPath();
+    ctx.ellipse(0, -4, 7, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#ff5722";
+    ctx.beginPath();
+    ctx.ellipse(0, -4, 3, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
+function createSparks() {
+    for (let i = 0; i < 3; i++) {
+        sparks.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            size: Math.random() * 3 + 1,
+            life: 1,
+            speed: Math.random() * 1.5 + 0.3
+        });
+    }
+}
+
+function drawSparks() {
+    createSparks();
+
+    sparks.forEach((s) => {
+        s.y -= s.speed;
+        s.life -= 0.005;
+
+        ctx.globalAlpha = Math.max(0, s.life);
+        ctx.fillStyle = "#ffe082";
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = "gold";
+
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    ctx.globalAlpha = 1;
+    sparks = sparks.filter(s => s.life > 0);
+}
+
+function animate() {
+    ctx.clearRect(0, 0, W, H);
+
+    drawRangoli();
+
+    // Diya decorations around rangoli
+    for (let i = 0; i < 8; i++) {
+        let a = Math.PI * 2 * i / 8;
+        let x = cx + Math.cos(a) * radius * 1.35;
+        let y = cy + Math.sin(a) * radius * 1.35;
+        drawDiya(x, y);
+    }
+
+    drawSparks();
+
+    angle += 0.002;
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>
